@@ -1,86 +1,81 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-void simulateAcoustics() {
-    std::cout << "Simulating acoustics..." << std::endl;
+// Include necessary headers for OpenGL, shaders, and model loading
+#include "renderer.cpp"
+#include "model_loader.cpp"
 
-    // Parameters for simulation
-    const double speed_of_sound = 343.0;  // m/s
-    const double frequency = 440.0;       // Hz 
-    const double amplitude = 1.0;         // Pascal
-    const double duration = 1.0;          // seconds
-    const double dt = 0.001;              // time step
-    const double dx = 0.01;               // spatial step (m)
+class Simulation {
+public:
+    std::vector<glm::vec3> instruments_positions; // Stores positions of instruments
+    std::vector<std::string> instruments_names;   // Stores names of instruments
 
-    // Create vectors to store pressure and velocity fields
-    std::vector<double> pressure;
-    std::vector<double> velocity;
-    std::vector<double> pressure_prev;
+    // Initialize the simulation
+    void init() {
+        // For now, just initializing a few positions for the instruments
+        instruments_positions.push_back(glm::vec3(0.0f, 0.0f, -5.0f));  // Example: Piano at the center
+        instruments_names.push_back("Piano");
 
-    // Initialize simulation space
-    const int grid_size = 100;
-    pressure.resize(grid_size, 0.0);
-    velocity.resize(grid_size, 0.0);
-    pressure_prev.resize(grid_size, 0.0);
+        instruments_positions.push_back(glm::vec3(3.0f, 0.0f, -5.0f));  // Example: Drum Kit to the right
+        instruments_names.push_back("Drum Kit");
 
-    // Initial conditions - Gaussian pulse
-    const double pulse_width = 10.0;
-    const double pulse_center = grid_size / 4;
-    for (int i = 0; i < grid_size; i++) {
-        pressure[i] = amplitude * exp(-pow((i - pulse_center) / pulse_width, 2));
-        pressure_prev[i] = pressure[i];
+        instruments_positions.push_back(glm::vec3(-3.0f, 0.0f, -5.0f)); // Example: Guitar to the left
+        instruments_names.push_back("Guitar");
+
+        std::cout << "Simulation Initialized. Instruments placed in the 3D space." << std::endl;
     }
 
-    // Constants for wave equation
-    const double c = speed_of_sound;
-    const double r = (c * dt / dx);
-    const double r2 = r * r;
-
-    // Main simulation loop - using FDTD (Finite Difference Time Domain) method
-    for (double t = 0; t < duration; t += dt) {
-        // Update velocity field (staggered leapfrog scheme)
-        for (int i = 0; i < grid_size - 1; i++) {
-            velocity[i] -= (dt / (dx * 1.2)) * (pressure[i + 1] - pressure[i]); // 1.2 is air density
-        }
-
-        // Store current pressure for update
-        std::vector<double> pressure_next = pressure;
-
-        // Update pressure field using wave equation
-        for (int i = 1; i < grid_size - 1; i++) {
-            pressure_next[i] = 2.0 * pressure[i] - pressure_prev[i] + 
-                             r2 * (pressure[i + 1] - 2.0 * pressure[i] + pressure[i - 1]);
-        }
-
-        // Apply absorbing boundary conditions
-        pressure_next[0] = pressure[1];
-        pressure_next[grid_size - 1] = pressure[grid_size - 2];
-
-        // Update pressure arrays for next iteration
-        pressure_prev = pressure;
-        pressure = pressure_next;
-
-        // Ray tracing implementation
-        if (static_cast<int>(t / dt) % 100 == 0) {  // Trace rays every 100 steps
-            for (int ray = 0; ray < 10; ray++) {  // Launch 10 rays
-                double ray_x = 0.0;
-                double ray_y = ray * grid_size / 10.0;
-                double ray_angle = M_PI / 4.0;  // 45 degrees
-                
-                // Trace ray path
-                for (int step = 0; step < 50; step++) {
-                    ray_x += cos(ray_angle) * dx;
-                    ray_y += sin(ray_angle) * dx;
-                    
-                    // Check for boundary reflections
-                    if (ray_y < 0 || ray_y >= grid_size) {
-                        ray_angle = -ray_angle;  // Reflect
-                    }
-                }
+    // Update the positions of instruments (for interaction or user manipulation)
+    void updateInstrumentPosition(const std::string& instrument_name, const glm::vec3& new_position) {
+        for (size_t i = 0; i < instruments_names.size(); ++i) {
+            if (instruments_names[i] == instrument_name) {
+                instruments_positions[i] = new_position;
+                std::cout << instrument_name << " moved to: " << new_position.x << ", " << new_position.y << ", " << new_position.z << std::endl;
+                return;
             }
         }
+        std::cout << "Instrument " << instrument_name << " not found!" << std::endl;
     }
 
-    std::cout << "Acoustic simulation completed." << std::endl;
+    // Render the simulation scene (calls the renderer to display instruments)
+    void renderSimulation(Renderer& renderer) {
+        // Iterate over all instruments and render them at their respective positions
+        for (size_t i = 0; i < instruments_positions.size(); ++i) {
+            renderer.renderModel(instruments_positions[i], instruments_names[i]);
+        }
+    }
+
+    // Simulation logic (e.g., interactions, movements, animations, etc.)
+    void run(Renderer& renderer) {
+        init(); // Initialize instruments
+
+        // Main simulation loop (example loop for updating and rendering)
+        while (true) {
+            // Update positions, interactions, animations
+            // For now, let's just render the scene
+            renderSimulation(renderer);
+
+            // You can add logic for updating instruments here
+            // For example, if the user moves a piano:
+            // updateInstrumentPosition("Piano", glm::vec3(1.0f, 0.0f, -5.0f));
+
+            // This is a placeholder for breaking the loop, you may add an exit condition
+            break; // Exiting immediately for the example (add real conditions here)
+        }
+    }
+};
+
+int main() {
+    // Create a Renderer object (assume renderer has methods for setting up OpenGL and rendering models)
+    Renderer renderer;
+
+    // Create a Simulation object
+    Simulation simulation;
+
+    // Run the simulation
+    simulation.run(renderer);
+
+    return 0;
 }
