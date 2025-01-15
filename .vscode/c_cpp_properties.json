@@ -4,11 +4,11 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/src",
-                "/opt/homebrew/include",                   // Homebrew M1/M2 path (if applicable)
-                "/opt/homebrew/opt/glfw/include",          // GLFW headers
-                "/opt/homebrew/opt/glm/include",           // GLM headers
-                "/opt/homebrew/opt/assimp/include",        // Assimp headers
-                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/c++"  // C++ standard library headers
+                "/opt/homebrew/include",                  
+                "/opt/homebrew/opt/glfw/include",          
+                "/opt/homebrew/opt/glm/include",           
+                "/opt/homebrew/opt/assimp/include",       
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk/usr/include/c++"  
             ],
             "defines": [],
             "macFrameworkPath": [
@@ -18,7 +18,7 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "macos-clang-arm64" // Use "macos-clang-x64" for Intel Macs
+            "intelliSenseMode": "macos-clang-arm64"
         }
     ],
     "version": 4
